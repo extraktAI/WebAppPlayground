@@ -1,0 +1,40 @@
+name: "Build + docker + publish ACR"
+
+on:
+  push:
+    branches:
+      - "staging"           # for latest
+      - "prod"              # for stable
+
+jobs:
+  full-build:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v4
+      
+        - name: Set up Node.js version
+          uses: actions/setup-node@v3
+          with:
+            node-version: '20.x'
+  
+        - name: build code
+          run: |
+            bash scripts/build_code.sh
+
+        - name: Show tags
+          run: |
+            git describe --abbrev=0 --tags
+
+        - name: build image
+          run: |
+            bash scripts/build_image.sh
+
+        # - uses: azure/docker-login@v1
+        #   with:
+        #     login-server: extraktaiacrpublic.azurecr.io
+        #     username: ${{ secrets.REGISTRY_USERNAME }}
+        #     password: ${{ secrets.REGISTRY_PASSWORD }}
+
+        # - name: publish image
+        #   run: |
+        #     bash scripts/publish_image.sh
