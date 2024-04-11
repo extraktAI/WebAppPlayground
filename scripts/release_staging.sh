@@ -28,6 +28,7 @@ git pull
 git merge $BRANCH_MAIN
 git push
 
+echo "Pulling back to main..."
 git checkout $BRANCH_MAIN
 git pull
 git merge $BRANCH_STAGING
