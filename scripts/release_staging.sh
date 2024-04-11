@@ -7,8 +7,8 @@
 SCRIPT_DIR=$(realpath $(dirname "$0"))
 ROOT=$SCRIPT_DIR/..
 
-$BRANCH_MAIN=main
-$BRANCH_STAGING=staging
+BRANCH_MAIN=main
+BRANCH_STAGING=staging
 
 cd $ROOT
 
