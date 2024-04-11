@@ -19,7 +19,3 @@ jobs:
         - name: build code
           run: |
             bash scripts/build_code.sh
-
-        - name: build image
-          run: |
-            bash scripts/build_image.sh

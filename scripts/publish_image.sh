@@ -12,4 +12,5 @@ IMG_ACR="web-app-playground"
 IMG_TAG="latest"
 FULL_TAG="$REGISTRY.azurecr.io/$IMG_ACR:$IMG_TAG"
 
+cd $ROOT
 docker push $FULL_TAG

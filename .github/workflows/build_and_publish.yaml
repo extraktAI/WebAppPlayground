@@ -25,12 +25,12 @@ jobs:
           run: |
             bash scripts/build_image.sh
 
-        # - uses: azure/docker-login@v1
-        #   with:
-        #     login-server: extraktaiacrpublic.azurecr.io
-        #     username: ${{ secrets.REGISTRY_USERNAME }}
-        #     password: ${{ secrets.REGISTRY_PASSWORD }}
+        - uses: azure/docker-login@v1
+          with:
+            login-server: extraktaiacrpublic.azurecr.io
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
 
-        # - name: publish image
-        #   run: |
-        #     bash scripts/publish_image.sh
+        - name: publish image
+          run: |
+            bash scripts/publish_image.sh
