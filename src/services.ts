@@ -181,9 +181,15 @@ export class DummyBlobService implements IBlobService {
 /** Blob service that stores data in Azure BLOB storage */
 export class AzureBlobService implements IBlobService {
 
+    private con_str: string;
+
+    constructor(con_str?: string) {
+        this.con_str = con_str ?? AZURE_BLOB_CONNECTION_STRING;
+    }
+
     public async uploadBufferToBlob(container_name: string, blob_name: string, metadata: Metadata, buffer: Buffer): Promise<void> {
         console.log(`Uploading ${blob_name} to ${container_name}`);
-        const blob_service_client = BlobServiceClient.fromConnectionString(AZURE_BLOB_CONNECTION_STRING);
+        const blob_service_client = BlobServiceClient.fromConnectionString(this.con_str);
         const container_client = blob_service_client.getContainerClient(container_name);
         await container_client.createIfNotExists();
         // upload blob
@@ -195,7 +201,7 @@ export class AzureBlobService implements IBlobService {
     }
 
     public async downloadBufferFromBlob(container_name: string, blob_name: string): Promise<Buffer> {
-        const blob_service_client = BlobServiceClient.fromConnectionString(AZURE_BLOB_CONNECTION_STRING);
+        const blob_service_client = BlobServiceClient.fromConnectionString(this.con_str);
         const container_client = blob_service_client.getContainerClient(container_name);
         const block_blob_client = container_client.getBlockBlobClient(blob_name);
         // get stream
