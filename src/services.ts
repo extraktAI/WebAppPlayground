@@ -11,7 +11,7 @@ const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6380", 10);
 const REDIS_KEY_PRIMARY = process.env.REDIS_KEY_PRIMARY || "";
 const REDIS_USE_TLS = (process.env.REDIS_USE_TLS ?? "true").toLowerCase() === "true";
 
-export const newRedisClient = (): Redis => {
+const newRedisClient = (): Redis => {
     return new Redis({
         port: REDIS_PORT,
         host: REDIS_HOST,
@@ -43,6 +43,58 @@ export interface ICache {
 
     // misc
     exists(key: string): Promise<boolean>;
+}
+export function canRunRedis(): boolean {
+    return REDIS_HOST.length > 0;
+}
+
+/** Factory method for creating blob storage, according to env settings */
+export function createCache(prefix: string): ICache {
+    if (canRunRedis()) {
+        console.log("creating redis client...");
+        return new RedisCache(prefix);
+    } else {
+        console.log("creating dummy blob storage...");
+        return new DummyCache(prefix);
+    }
+}
+
+export class DummyCache implements ICache {
+
+    private map: Map<string, string | number | object> = new Map<string, string | number | object>();
+    private prefix_: string;
+
+    constructor(prefix: string) {
+        this.prefix_ = prefix;
+    }
+
+    prefix(): string {
+        return this.prefix_;
+    }
+    async setStr(key: string, value: string, ttl_sec: number): Promise<void> {
+        this.map.set(this.prefix_ + key, value);
+    }
+    async setNum(key: string, value: number, ttl_sec: number): Promise<void> {
+        this.map.set(this.prefix_ + key, value);
+    }
+    async setObj(key: string, value: object, ttl_sec: number): Promise<void> {
+        this.map.set(this.prefix_ + key, value);
+    }
+    async getStr(key: string): Promise<string | null> {
+        return this.map.get(this.prefix_ + key) as string | null;
+    }
+    async getNum(key: string): Promise<number | null> {
+        return this.map.get(this.prefix_ + key) as number | null;
+    }
+    async getObj<T>(key: string): Promise<T | null> {
+        return this.map.get(this.prefix_ + key) as T | null;
+    }
+    async del(key: string): Promise<void> {
+        this.map.delete(this.prefix_ + key);
+    }
+    async exists(key: string): Promise<boolean> {
+        return this.map.has(this.prefix_ + key);
+    }
 }
 
 export class RedisCache implements ICache {

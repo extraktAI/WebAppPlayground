@@ -3,7 +3,7 @@ dotenv.config();
 
 import express from "express";
 import morgan from "morgan";
-import { ICache, RedisCache, createBlobService } from "./services";
+import { ICache, RedisCache, createBlobService, createCache } from "./services";
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -22,7 +22,7 @@ app.use(morgan("myformat", {
 ///////////////////////////////////////////////////////////////////////////
 
 let counter = 0;
-const cache: ICache = new RedisCache("counter");
+const cache: ICache = createCache("counter:");
 const blob_storage = createBlobService();
 const blob_container = "attachments";
 const blob_name = "my-blob";
