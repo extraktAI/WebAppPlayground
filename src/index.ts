@@ -38,6 +38,15 @@ app.get("/", async (req, res) => {
     res.send(`Hello ${name}! counter=${counter} val=${val ?? "null"}`);
 });
 
+app.get("/status", async (req, res) => {
+    const msgs = [
+        `counter=${counter}`,
+        `cache=${cache.name()}`,
+        `blob_storage=${blob_storage.name()}`
+    ];
+    res.send(msgs.join("\n"));
+});
+
 // curl -X POST http://localhost:PORT/inc -d '{"name":"Alice"}' -H "Content-Type: application/json"
 app.post("/inc", async (req, res) => {
     counter++;

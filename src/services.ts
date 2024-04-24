@@ -26,6 +26,8 @@ const newRedisClient = (): Redis => {
 ///////////////////////////////////////////////////////
 // CACHE
 export interface ICache {
+
+    name(): string;
     prefix(): string;
 
     // setters
@@ -68,6 +70,9 @@ export class DummyCache implements ICache {
         this.prefix_ = prefix;
     }
 
+    name(): string {
+        return "DummyCache";
+    }
     prefix(): string {
         return this.prefix_;
     }
@@ -106,6 +111,9 @@ export class RedisCache implements ICache {
         this.prefix_ = prefix;
     }
 
+    public name(): string {
+        return "RedisCache";
+    }
     public prefix(): string {
         return this.prefix_;
     }
@@ -148,6 +156,7 @@ export class RedisCache implements ICache {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export interface IBlobService {
+    name(): string;
     uploadBufferToBlob(container_name: string, blob_name: string, metadata: Metadata, buffer: Buffer): Promise<void>;
     downloadBufferFromBlob(container_name: string, blob_name: string): Promise<Buffer>;
 }
@@ -176,6 +185,9 @@ export class DummyBlobService implements IBlobService {
     public async downloadBufferFromBlob(container_name: string, blob_name: string): Promise<Buffer> { // eslint-disable-line @typescript-eslint/no-unused-vars
         return this.map.get(blob_name) || Buffer.from("");
     }
+    public name(): string {
+        return "DummyBlobService";
+    }
 }
 
 /** Blob service that stores data in Azure BLOB storage */
@@ -187,6 +199,9 @@ export class AzureBlobService implements IBlobService {
         this.con_str = con_str ?? AZURE_BLOB_CONNECTION_STRING;
     }
 
+    public name(): string {
+        return "AzureBlobService";
+    }
     public async uploadBufferToBlob(container_name: string, blob_name: string, metadata: Metadata, buffer: Buffer): Promise<void> {
         console.log(`Uploading ${blob_name} to ${container_name}`);
         const blob_service_client = BlobServiceClient.fromConnectionString(this.con_str);
