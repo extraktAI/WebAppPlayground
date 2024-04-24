@@ -216,6 +216,7 @@ export class AzureBlobService implements IBlobService {
     }
 
     public async downloadBufferFromBlob(container_name: string, blob_name: string): Promise<Buffer> {
+        console.log(`Downloading ${blob_name} from ${container_name}`);
         const blob_service_client = BlobServiceClient.fromConnectionString(this.con_str);
         const container_client = blob_service_client.getContainerClient(container_name);
         const block_blob_client = container_client.getBlockBlobClient(blob_name);
