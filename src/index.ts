@@ -3,7 +3,7 @@ dotenv.config();
 
 import express from "express";
 import morgan from "morgan";
-import { ICache, RedisCache, createBlobService, createCache } from "./services";
+import { ICache, IDb, RedisCache, createBlobService, createCache, createDb } from "./services";
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -24,6 +24,8 @@ app.use(morgan("myformat", {
 let counter = 0;
 const cache: ICache = createCache("counter:");
 const blob_storage = createBlobService();
+const db: IDb = createDb();
+
 const blob_container = "attachments";
 const blob_name = "my-blob";
 
@@ -63,12 +65,17 @@ app.post("/blob-store", async (req, res) => {
 // curl http://localhost:PORT/blob-store
 app.get("/blob-store", async (req, res) => {
     const data = await blob_storage.downloadBufferFromBlob(blob_container, blob_name);
-    res.send("Data=" + data.toString());
+    res.send("Data=" + data.toString() + "\n");
+});
+// curl http://localhost:PORT/items
+app.get("/items", async (req, res) => {
+    const data = await db.items();
+    res.send("Items=" + data.toString() + "\n");
 });
 
 
 ///////////////////////////////////////////////////////////////////////////
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running at port ${port} - http://localhost:${port}`);
 });

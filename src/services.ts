@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { Client } from "pg";
 import {
     BlobServiceClient,
     Metadata
@@ -247,3 +248,105 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
     });
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export interface IDb {
+    init(): Promise<void>;
+    items(): Promise<number[]>;
+}
+
+export function createDb(): IDb {
+    if (process.env.DB_HOST !== undefined) {
+        console.log("creating sql db...");
+
+        const DB_HOST = process.env.DB_HOST || "";
+        const DB_PORT = parseInt(process.env.DB_PORT || "5432", 10);
+        const DB_USER = process.env.DB_USER || "";
+        const DB_PASS = process.env.DB_PASS || "";
+        const DB_NAME = process.env.DB_NAME || "";
+        const DB_SKIP_SSL = (process.env.DB_SKIP_SSL ?? "false") === "true";
+
+        const CONNECTION_STRING = `postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+
+        return new SqlDb(CONNECTION_STRING, DB_SKIP_SSL);
+    } else {
+        console.log("creating mock db...");
+        return new MockDb();
+    }
+}
+
+export class MockDb implements IDb {
+    private data: number[] = [];
+    private init_called = false;
+
+    public async init(): Promise<void> {
+        this.data = [1, 2, 3, 4, 5];
+        this.init_called = true;
+    }
+
+    public async items(): Promise<number[]> {
+        if (!this.init_called) {
+            await this.init();
+        }
+        return this.data.slice();
+    }
+}
+
+export class SqlDb implements IDb {
+    private conn_str: string;
+    private skip_ssl: boolean;
+    private init_called = false;
+
+    constructor(conn_str: string, skip_ssl: boolean) {
+        this.conn_str = conn_str;
+        this.skip_ssl = skip_ssl;
+    }
+
+    public async init(): Promise<void> {
+
+        const sql = `CREATE TABLE IF NOT EXISTS items (
+            id SERIAL PRIMARY KEY,
+            version NUMERIC NOT NULL
+        )`;
+        await this.query(sql, []);
+
+        const sql2 = "insert into items (version) values (1), (22), (34), (411), (52);";
+        await this.query(sql2, []);
+
+        this.init_called = true;
+    }
+
+    public async items(): Promise<number[]> {
+        if (!this.init_called) {
+            await this.init();
+        }
+        const sql = `select * from items;`;
+        const data = await this.query(sql, []);
+        return data.map(x => x.version);
+    }
+
+    private async query(sql: string, params: any[]): Promise<any[]> {
+        console.log(`Running query: ${sql}`);
+        console.log(`Params: ${params}`);
+        const client = new Client({
+            connectionString: this.conn_str,
+            ssl: this.skip_ssl ? undefined : { rejectUnauthorized: false }
+        });
+        const rows: any[] = [];
+        try {
+            await client.connect();
+            const results = await client.query(sql, params);
+            console.log(`Received ${results.rowCount} rows`);
+            for (const row of results.rows) {
+                rows.push(row);
+            }
+        } catch (err: any) {
+            console.error("Error running query", err);
+            console.error(`Query: ${sql}, Params: ${params}`);
+            console.error(`Current CallStack: ${new Error().stack}`);
+        } finally {
+            await client.end();
+        }
+        return rows;
+    }
+}
