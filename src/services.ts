@@ -315,9 +315,9 @@ export class SqlDb implements IDb {
         await this.query(sql_create, []);
 
         // insert data if needed
-        const sql_cnt = `select count(*) from items;`;
+        const sql_cnt = `select count(*) as cnt from items;`;
         const data_cnt = await this.query(sql_cnt, []);
-        const cnt = data_cnt[0].count;
+        const cnt = data_cnt[0].cnt;
         if (cnt === 0) {
             const sql_insert = "insert into items (version) values (1), (22), (34), (411), (52);";
             await this.query(sql_insert, []);
