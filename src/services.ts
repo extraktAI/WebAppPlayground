@@ -266,9 +266,10 @@ export function createDb(): IDb {
         const DB_NAME = process.env.DB_NAME || "";
         const DB_SKIP_SSL = (process.env.DB_SKIP_SSL ?? "false") === "true";
 
-        const CONNECTION_STRING = `postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+        const CONNECTION_STRING = `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
 
-        return new SqlDb(CONNECTION_STRING, DB_SKIP_SSL);
+        console.log(`connecting to ${DB_HOST} ...`);
+        return new SqlDb(CONNECTION_STRING, false);
     } else {
         console.log("creating mock db...");
         return new MockDb();
@@ -304,14 +305,23 @@ export class SqlDb implements IDb {
 
     public async init(): Promise<void> {
 
-        const sql = `CREATE TABLE IF NOT EXISTS items (
+        if (this.init_called) {
+            return;
+        }
+        const sql_create = `CREATE TABLE IF NOT EXISTS items (
             id SERIAL PRIMARY KEY,
             version NUMERIC NOT NULL
         )`;
-        await this.query(sql, []);
+        await this.query(sql_create, []);
 
-        const sql2 = "insert into items (version) values (1), (22), (34), (411), (52);";
-        await this.query(sql2, []);
+        // insert data if needed
+        const sql_cnt = `select count(*) from items;`;
+        const data_cnt = await this.query(sql_cnt, []);
+        const cnt = data_cnt[0].count;
+        if (cnt === 0) {
+            const sql_insert = "insert into items (version) values (1), (22), (34), (411), (52);";
+            await this.query(sql_insert, []);
+        }
 
         this.init_called = true;
     }
