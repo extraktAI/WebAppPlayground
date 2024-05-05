@@ -320,7 +320,17 @@ export class SqlDb implements IDb {
         console.log(`Data count: `, data_cnt);
         const cnt = data_cnt[0].cnt;
         if (cnt == 0) {
-            const sql_insert = "insert into items (version) values (1), (22), (34), (411), (52);";
+            const d = new Date();
+            const values = [
+                d.getFullYear(),
+                d.getMonth() + 1,
+                d.getDate(),
+                d.getHours(),
+                d.getMinutes(),
+                d.getSeconds(),
+                d.getMilliseconds()
+            ].map(x => "(" + x + ")").join(", ");
+            const sql_insert = `insert into items (version) values ${values};`;
             await this.query(sql_insert, []);
         }
 
