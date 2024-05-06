@@ -68,6 +68,7 @@ export class DummyCache implements ICache {
     private prefix_: string;
 
     constructor(prefix: string) {
+        console.log("DummyCache: creating with prefix", prefix);
         this.prefix_ = prefix;
     }
 
@@ -78,27 +79,35 @@ export class DummyCache implements ICache {
         return this.prefix_;
     }
     async setStr(key: string, value: string, ttl_sec: number): Promise<void> {
+        console.log("DummyCache: setting key", key, "to", value, "with ttl", ttl_sec, "seconds");
         this.map.set(this.prefix_ + key, value);
     }
     async setNum(key: string, value: number, ttl_sec: number): Promise<void> {
+        console.log("DummyCache: setting key", key, "to", value, "with ttl", ttl_sec, "seconds");
         this.map.set(this.prefix_ + key, value);
     }
     async setObj(key: string, value: object, ttl_sec: number): Promise<void> {
+        console.log("DummyCache: setting key", key, "to", value, "with ttl", ttl_sec, "seconds");
         this.map.set(this.prefix_ + key, value);
     }
     async getStr(key: string): Promise<string | null> {
+        console.log("DummyCache: getting key", key);
         return this.map.get(this.prefix_ + key) as string | null;
     }
     async getNum(key: string): Promise<number | null> {
+        console.log("DummyCache: getting key", key);
         return this.map.get(this.prefix_ + key) as number | null;
     }
     async getObj<T>(key: string): Promise<T | null> {
+        console.log("DummyCache: getting key", key);
         return this.map.get(this.prefix_ + key) as T | null;
     }
     async del(key: string): Promise<void> {
+        console.log("DummyCache: deleting key", key);
         this.map.delete(this.prefix_ + key);
     }
     async exists(key: string): Promise<boolean> {
+        console.log("DummyCache: checking if key exists", key);
         return this.map.has(this.prefix_ + key);
     }
 }
@@ -108,6 +117,7 @@ export class RedisCache implements ICache {
     private prefix_: string;
 
     constructor(prefix: string) {
+        console.log("RedisCache: creating with prefix", prefix);
         this.redis = newRedisClient();
         this.prefix_ = prefix;
     }
@@ -120,36 +130,44 @@ export class RedisCache implements ICache {
     }
 
     public async setStr(key: string, value: string, ttl_sec: number): Promise<void> {
+        console.log(`RedisCache: Setting key ${key} to ${value} with ttl ${ttl_sec} seconds`);
         await this.redis.set(this.prefix_ + key, value, "EX", ttl_sec);
     }
 
     public async setNum(key: string, value: number, ttl_sec: number): Promise<void> {
+        console.log(`RedisCache: Setting key ${key} to ${value} with ttl ${ttl_sec} seconds`);
         await this.redis.set(this.prefix_ + key, value.toString(), "EX", ttl_sec);
     }
 
     public async setObj(key: string, value: object, ttl_sec: number): Promise<void> {
+        console.log(`RedisCache: Setting key ${key} to ${value} with ttl ${ttl_sec} seconds`);
         await this.redis.set(this.prefix_ + key, JSON.stringify(value), "EX", ttl_sec);
     }
 
     public async getStr(key: string): Promise<string | null> {
+        console.log(`RedisCache: Getting key ${key}`);
         return await this.redis.get(this.prefix_ + key);
     }
 
     public async getNum(key: string): Promise<number | null> {
+        console.log(`RedisCache: Getting key ${key}`);
         const value = await this.redis.get(this.prefix_ + key);
         return value ? parseInt(value, 10) : null;
     }
 
     public async getObj<T>(key: string): Promise<T | null> {
+        console.log(`RedisCache: Getting key ${key}`);
         const value = await this.redis.get(this.prefix_ + key);
         return value ? JSON.parse(value) : null;
     }
 
     public async del(key: string): Promise<void> {
+        console.log(`RedisCache: Deleting key ${key}`);
         await this.redis.del(this.prefix_ + key);
     }
 
     public async exists(key: string): Promise<boolean> {
+        console.log(`RedisCache: Checking if key ${key} exists`);
         return await this.redis.exists(this.prefix_ + key) === 1;
     }
 }
