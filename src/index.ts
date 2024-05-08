@@ -2,7 +2,8 @@ import "dotenv/config";
 
 import express from "express";
 import morgan from "morgan";
-import { ICache, IDb, RedisCache, createBlobService, createCache, createDb } from "./services";
+import { promises as fs } from "fs";
+import { ICache, IDb, RedisCache, createBlobService, createCache, createDb, getCleanTextFromOcr } from "./services";
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -71,7 +72,12 @@ app.get("/items", async (req, res) => {
     const data = await db.items();
     res.send("Items=" + data.toString() + "\n");
 });
-
+// curl http://localhost:PORT/ocr
+app.get("/ocr", async (req, res) => {
+    const bf = await fs.readFile(__dirname + "/../sample.pdf");
+    const content = await getCleanTextFromOcr(bf);
+    res.send("OCR result=" + content);
+});
 
 ///////////////////////////////////////////////////////////////////////////
 

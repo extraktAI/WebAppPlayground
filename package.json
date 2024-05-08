@@ -60,6 +60,7 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
+    "@azure/ai-form-recognizer": "^5.0.0",
     "@azure/storage-blob": "^12.17.0",
     "connect-redis": "^7.1.0",
     "content-disposition": "^0.5.4",

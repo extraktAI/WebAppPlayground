@@ -5,6 +5,13 @@ import {
     Metadata
 } from "@azure/storage-blob";
 
+import {
+    AzureKeyCredential,
+    DocumentAnalysisClient,
+    DocumentPage,
+    Point2D
+} from "@azure/ai-form-recognizer";
+
 const AZURE_BLOB_CONNECTION_STRING = process.env.AZURE_BLOB_CONNECTION_STRING || "";
 
 const REDIS_HOST = process.env.REDIS_HOST || "";
@@ -388,4 +395,33 @@ export class SqlDb implements IDb {
         }
         return rows;
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+const AZURE_DOC_OCR_ENDPOINT = process.env.AZURE_DOC_OCR_ENDPOINT || "";
+const AZURE_DOC_OCR_KEY = process.env.AZURE_DOC_OCR_KEY || "";
+
+export async function getCleanTextFromOcr(buffer: Buffer): Promise<string> {
+
+    if (AZURE_DOC_OCR_ENDPOINT === "") {
+        return "AZURE_DOC_OCR_ENDPOINT not set";
+    }
+
+    // prepare client
+    const client = new DocumentAnalysisClient(
+        AZURE_DOC_OCR_ENDPOINT,
+        new AzureKeyCredential(AZURE_DOC_OCR_KEY)
+    );
+
+    // call client
+    const poller = await client.beginAnalyzeDocument("prebuilt-document", buffer, {
+        onProgress: (state) => { console.log(`analyzing document: ${state.status}`); },
+        features: ["ocrHighResolution", "styleFont"]
+    });
+
+    // wait for result
+    const result = await poller.pollUntilDone();
+    const { content } = result;
+    return content;
 }
