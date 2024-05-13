@@ -333,10 +333,14 @@ export class SqlDb implements IDb {
         if (this.init_called) {
             return;
         }
+
+        await this.query("SELECT CREATE_EXTENSION('vector');", []);
+
         const sql_create = `CREATE TABLE IF NOT EXISTS items (
             id SERIAL PRIMARY KEY,
+            embedding VECTOR(10),
             version NUMERIC NOT NULL
-        )`;
+        ); `;
         await this.query(sql_create, []);
 
         // insert data if needed
@@ -354,8 +358,8 @@ export class SqlDb implements IDb {
                 d.getMinutes(),
                 d.getSeconds(),
                 d.getMilliseconds()
-            ].map(x => "(" + x + ")").join(", ");
-            const sql_insert = `insert into items (version) values ${values};`;
+            ].map(x => "(" + x + ", " + "[0,1,2,3,4,5,6,7,8,9]" + ")").join(", ");
+            const sql_insert = `insert into items (version, embedding) values ${values};`;
             await this.query(sql_insert, []);
         }
 
