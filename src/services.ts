@@ -358,7 +358,7 @@ export class SqlDb implements IDb {
                 d.getMinutes(),
                 d.getSeconds(),
                 d.getMilliseconds()
-            ].map(x => "(" + x + ", " + "[0,1,2,3,4,5,6,7,8,9]" + ")").join(", ");
+            ].map(x => "(" + x + ", " + "'[0,1,2,3,4,5,6,7,8,9]'" + ")").join(", ");
             const sql_insert = `insert into items (version, embedding) values ${values};`;
             await this.query(sql_insert, []);
         }
